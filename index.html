@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>皮克敏與英語探險隊：診所解密之旅 (國二 B3 L2)</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #A5D6A7;
+            --secondary: #1976D2;
+            --accent: #FBC02D;
+            --danger: #E53935;
+            --bg-color: #E8F5E9;
+            --card-bg: #FFFFFF;
+            --text-dark: #263238;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top Header Navigation */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 10px;
+            width: 8px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50% 50% 0 0;
+        }
+
+        nav button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-left: 5px;
+        }
+
+        nav button:hover, nav button.active {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Stage Navigation Bar */
+        .stage-bar {
+            display: flex;
+            background: #C8E6C9;
+            padding: 10px;
+            justify-content: space-around;
+        }
+
+        .stage-item {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #558B2F;
+            padding: 6px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .stage-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Game Content Area */
+        main {
+            padding: 25px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        /* Pikmin Canvas Area */
+        .pikmin-stage-area {
+            height: 140px;
+            background: linear-gradient(to bottom, #E1F5FE, #C8E6C9);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px dashed #81C784;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-bottom: 10px;
+        }
+
+        .pikmin {
+            width: 45px;
+            height: 65px;
+            position: relative;
+            animation: bounce 1.5s infinite ease-in-out alternate;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .pikmin:hover {
+            transform: scale(1.15);
+        }
+
+        .pikmin-head {
+            width: 30px;
+            height: 30px;
+            background: #FF5252;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+        }
+        .pikmin-leaf {
+            width: 14px;
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            top: -16px;
+            left: 8px;
+            transform: rotate(15deg);
+        }
+        .pikmin-flower {
+            width: 18px;
+            height: 18px;
+            background: #FFF;
+            border-radius: 50%;
+            position: absolute;
+            top: -16px;
+            left: 6px;
+            border: 3px solid #FFEB3B;
+        }
+        .pikmin-body {
+            width: 18px;
+            height: 25px;
+            background: #FF5252;
+            border-radius: 10px;
+            margin: -5px auto 0 auto;
+        }
+
+        .pikmin.blue .pikmin-head, .pikmin.blue .pikmin-body { background: #448AFF; }
+        .pikmin.yellow .pikmin-head, .pikmin.yellow .pikmin-body { background: #FFD740; }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-12px); }
+        }
+
+        /* Cards and Elements */
+        .card {
+            background: white;
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover {
+            background: #1B5E20;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        .btn-secondary:hover {
+            background: #0D47A1;
+        }
+        .btn-audio {
+            background: #FF9800;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        .btn-audio:hover {
+            background: #F57C00;
+        }
+
+        /* Options Grid */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            background: #F5F5F5;
+            border: 2px solid #E0E0E0;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+        .option-btn:hover {
+            background: #E8F5E9;
+            border-color: var(--primary);
+        }
+        .option-btn.correct {
+            background: #C8E6C9;
+            border-color: #388E3C;
+            color: #1B5E20;
+        }
+        .option-btn.wrong {
+            background: #FFCDD2;
+            border-color: #D32F2F;
+            color: #B71C1C;
+        }
+
+        /* Audio Speak Tag */
+        .speak-target {
+            cursor: pointer;
+            text-decoration: underline dotted #1976D2;
+            color: #1976D2;
+            font-weight: bold;
+        }
+        .speak-target:hover {
+            color: #0D47A1;
+        }
+
+        /* Progress & Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .stat-card {
+            background: #F1F8E9;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #C8E6C9;
+        }
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #558B2F;
+        }
+
+        .progress-bar-bg {
+            background: #E0E0E0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-bar-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Feedback modal */
+        .feedback {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            display: none;
+        }
+        .feedback.correct {
+            display: block;
+            background: #E8F5E9;
+            color: #2E7D32;
+            border: 1px solid #A5D6A7;
+        }
+        .feedback.wrong {
+            display: block;
+            background: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #EF9A9A;
+        }
+
+        /* Word Card Flashcard Style */
+        .flashcard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            background: #FAFAFA;
+            border: 2px dashed #4CAF50;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .flashcard .word {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .flashcard .meaning {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .flashcard .example {
+            font-size: 1rem;
+            color: var(--text-dark);
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #E0E0E0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <div class="logo">
+            <span class="logo-icon"></span>
+            皮克敏英語探險隊 (B3 L2)
+        </div>
+        <nav>
+            <button onclick="switchView('game')" class="active" id="nav-game">遊戲關卡</button>
+            <button onclick="switchView('dashboard')" id="nav-dashboard">學習儀表板</button>
+        </nav>
+    </header>
+
+    <div class="stage-bar">
+        <div class="stage-item active" id="stg-1" onclick="loadStage(1)">Stage 1: 單字萌芽</div>
+        <div class="stage-item" id="stg-2" onclick="loadStage(2)">Stage 2: 授與動詞</div>
+        <div class="stage-item" id="stg-3" onclick="loadStage(3)">Stage 3: 診所解密</div>
+        <div class="stage-item" id="stg-4" onclick="loadStage(4)">Stage 4: 大花獸測驗</div>
+    </div>
+
+    <!-- Animated Pikmin Display Bar -->
+    <div style="padding: 15px 25px 0 25px;">
+        <div class="pikmin-stage-area" id="pikmin-field">
+            <div class="pikmin" onclick="speakText('Red Pikmin is helping you!')">
+                <div class="pikmin-leaf"></div>
+                <div class="pikmin-head"></div>
+                <div class="pikmin-body"></div>
+            </div>
+            <div class="pikmin blue" style="animation-delay: 0.3s;" onclick="speakText('Blue Pikmin loves English!')">
+                <div class="pikmin-flower"></div>
+                <div class="pikmin-head"></div>
+                <div class="pikmin-body"></div>
+            </div>
+            <div class="pikmin yellow" style="animation-delay: 0.6s;" onclick="speakText('Yellow Pikmin is ready!')">
+                <div class="pikmin-leaf"></div>
+                <div class="pikmin-head"></div>
+                <div class="pikmin-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <!-- GAME VIEW SECTION -->
+        <section id="view-game" class="view-section active">
+            
+            <!-- STAGE 1: VOCABULARY EXPLORATION -->
+            <div id="stage-1-content">
+                <h2 style="color: var(--primary); margin-bottom: 10px;">Stage 1: 花園萌芽（單字發音卡）</h2>
+                <p style="margin-bottom: 15px; font-size: 0.95rem; color: #666;">點擊單字或例句收聽標準發音，幫助皮克敏吸收養分成長！</p>
+                
+                <div class="flashcard">
+                    <div class="word" id="fc-word">head</div>
+                    <div class="meaning" id="fc-meaning">(n.) 頭</div>
+                    <div class="example" id="fc-example">
+                        "Serena: Ouch. A ball hit me on my <span class="speak-target" onclick="speakText('head')">head</span>."
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn btn-audio" onclick="speakCurrentCard()">🔊 發音 (Pronounce)</button>
+                        <button class="btn btn-secondary" onclick="nextFlashcard()">下一張 (Next Word) ➔</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAGE 2: DITRANSITIVE VERBS (TO vs FOR) -->
+            <div id="stage-2-content" style="display: none;">
+                <h2 style="color: var(--primary); margin-bottom: 10px;">Stage 2: 樹林搬運（授與動詞介系詞橋樑）</h2>
+                <p style="margin-bottom: 15px; font-size: 0.95rem; color: #666;">皮克敏要搬禮物給朋友，請選擇正確的介系詞 (to / for) 建造安全的橋樑！</p>
+                
+                <div class="card">
+                    <div style="font-size: 1.15rem; font-weight: bold; margin-bottom: 10px;" id="stg2-question">
+                        1. Ted showed his new cellphone ______ his friends.
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px;" id="stg2-hint">
+                        提示：show（呈現/展示）是指動作傳達的方向。
+                    </div>
+                    <div class="options-grid" id="stg2-options">
+                        <!-- Dynamic Options -->
+                    </div>
+                    <div class="feedback" id="stg2-feedback"></div>
+                </div>
+            </div>
+
+            <!-- STAGE 3: WHY / BECAUSE / SO CLINIC -->
+            <div id="stage-3-content" style="display: none;">
+                <h2 style="color: var(--primary); margin-bottom: 10px;">Stage 3: 診所解密（Why, Because & So 連接詞）</h2>
+                <p style="margin-bottom: 15px; font-size: 0.95rem; color: #666;">協助診所裡的皮克敏醫生回答病人的原因與結果問題！</p>
+                
+                <div class="card">
+                    <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;" id="stg3-question">
+                        問句：Why didn't Jane go to school today?
+                    </div>
+                    <div class="options-grid" id="stg3-options">
+                        <!-- Dynamic Options -->
+                    </div>
+                    <div class="feedback" id="stg3-feedback"></div>
+                </div>
+            </div>
+
+            <!-- STAGE 4: QUIZ BOSS -->
+            <div id="stage-4-content" style="display: none;">
+                <h2 style="color: var(--primary); margin-bottom: 10px;">Stage 4: 大花獸綜合試煉（會考與文法測驗）</h2>
+                <p style="margin-bottom: 15px; font-size: 0.95rem; color: #666;">答對問題讓大花獸綻放花瓣，獲取皮克敏英語大師勳章！</p>
+                
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-weight: bold; color: var(--primary);" id="quiz-progress-text">題目 1 / 10</span>
+                        <span style="font-weight: bold; color: var(--accent);" id="quiz-score-text">得分: 0</span>
+                    </div>
+                    <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;" id="quiz-question">
+                        載入測驗中...
+                    </div>
+                    <div class="options-grid" id="quiz-options">
+                        <!-- Dynamic Options -->
+                    </div>
+                    <div class="feedback" id="quiz-feedback"></div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- DASHBOARD VIEW SECTION -->
+        <section id="view-dashboard" class="view-section">
+            <h2 style="color: var(--primary); margin-bottom: 15px;">學習成效儀表板 (Learning Dashboard)</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="db-accuracy">0%</div>
+                    <div class="stat-label">整體答題正確率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="db-completed">0 / 20</div>
+                    <div class="stat-label">完成練習題數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="db-combo">0</div>
+                    <div class="stat-label">最高連續答對 (Combo)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="db-badge">初學者</div>
+                    <div class="stat-label">目前獲得稱號</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: var(--secondary);">三大文法模組掌握度診斷</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span>模組 A：授與動詞與介系詞 (to / for)</span>
+                        <span id="db-m1-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="db-m1-bar"></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span>模組 B：Why 疑問句型與預設立場</span>
+                        <span id="db-m2-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="db-m2-bar"></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span>模組 C：because 與 so 因果關係</span>
+                        <span id="db-m3-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="db-m3-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 10px; color: var(--danger);">錯題紀錄與重點解析本</h3>
+                <div id="mistake-list" style="font-size: 0.9rem; color: #555;">
+                    尚無錯題紀錄，繼續保持！
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="resetLearningData()">🔄 重置學習歷程紀錄</button>
+        </section>
+    </main>
+</div>
+
+<script>
+// --- VOCABULARY DATA ---
+const vocabList = [
+    { word: "head", pos: "(n.) 頭", example: "Serena: Ouch. A ball hit me on my head." },
+    { word: "hair", pos: "(n.) 頭髮", example: "Michelle just washed her hair. Her hair is wet now." },
+    { word: "shoulder", pos: "(n.) 肩膀", example: "There is a bird on Ray's left shoulder." },
+    { word: "stomach", pos: "(n.) 肚子；胃", example: "My stomach hurt because I was very hungry." },
+    { word: "arm", pos: "(n.) 手臂", example: "Ms. Chen has a bag of apples in her arms." },
+    { word: "hand", pos: "(n.) 手", example: "Your hands are dirty. Go and wash them." },
+    { word: "knee", pos: "(n.) 膝蓋", example: "Grace hurt her knees and can't jump now." },
+    { word: "leg", pos: "(n.) 腿", example: "Henry broke his leg yesterday." },
+    { word: "toe", pos: "(n.) 腳趾", example: "Zack was all wet from toe to head." },
+    { word: "neck", pos: "(n.) 脖子", example: "Horses, goats, and zebras are animals with long necks." },
+    { word: "catch a cold", pos: "(v.片語) 感冒", example: "Ashley caught a cold, but she still came to work." },
+    { word: "fever", pos: "(n.) 發燒", example: "Jack didn't go to school because he had a high fever." },
+    { word: "headache", pos: "(n.) 頭痛", example: "Vicky had a headache, so she didn't go to the movies." },
+    { word: "sore throat", pos: "(n.) 喉嚨痛", example: "Cathy couldn't speak because she had a sore throat." },
+    { word: "medicine", pos: "(n.) 藥", example: "Please take the medicine three times a day with warm water." }
+];
+
+// --- STAGE 2 QUESTIONS (DITRANSITIVE VERBS) ---
+const stage2Questions = [
+    {
+        q: "1. Ted showed his new cellphone ______ his friends.",
+        options: ["(A) to", "(B) for", "(C) with", "(D) from"],
+        ans: 0,
+        explanation: "show (展示) 搭配介系詞 to 表動作傳達方向。"
+    },
+    {
+        q: "2. I bought a robot ______ my little brother on his birthday.",
+        options: ["(A) to", "(B) for", "(C) with", "(D) at"],
+        ans: 1,
+        explanation: "buy (購買) 搭配介系詞 for 表為某人而做。"
+    },
+    {
+        q: "3. Sherry made me some pancakes. ➔ Sherry made ______. (改為代名詞)",
+        options: ["(A) me them", "(B) them to me", "(C) them for me", "(D) it for me"],
+        ans: 2,
+        explanation: "當直接受詞為代名詞時，須用有介系詞句型。make 搭配 for，複數用 them。"
+    },
+    {
+        q: "4. A: Where did you get the toy car? B: My mom ______ as my birthday gift.",
+        options: ["(A) gave me it", "(B) bought it me", "(C) gave it to me", "(D) bought me it"],
+        ans: 2,
+        explanation: "代名詞 it 必須放在介系詞前：gave it to me。"
+    }
+];
+
+// --- STAGE 3 QUESTIONS (WHY / BECAUSE / SO) ---
+const stage3Questions = [
+    {
+        q: "1. Why ______ Jane go to school today? (因為感冒了沒去，帶有預設立場)",
+        options: ["(A) didn't", "(B) doesn't", "(C) wasn't", "(D) don't"],
+        ans: 0,
+        explanation: "Why didn't... 表示問者預期 Jane 應該去上學。"
+    },
+    {
+        q: "2. The big test is coming, ______ the students are studying hard.",
+        options: ["(A) because", "(B) so", "(C) but", "(D) because of"],
+        ans: 1,
+        explanation: "前因為「大考快到了」，後結果為「認真唸書」，結果子句前加逗號使用 so。"
+    },
+    {
+        q: "3. ______ the heavy rain, I was late for work today.",
+        options: ["(A) Because", "(B) So", "(C) Because of", "(D) As"],
+        ans: 2,
+        explanation: "the heavy rain 是名詞短語，前面須使用介系詞片語 because of。"
+    }
+];
+
+// --- STAGE 4 COMPREHENSIVE QUIZ QUESTIONS ---
+const quizQuestions = [
+    { q: "Don't go away when you're cooking, ______ the food might burn. 【112會考】", options: ["(A) but", "(B) if", "(C) or", "(D) so"], ans: 2, exp: "or 表『否則』：否則食物可能會燒焦。" },
+    { q: "The movie starts at two o'clock, ______ let's meet at the theater at 1:45. 【111會考】", options: ["(A) so", "(B) or", "(C) if", "(D) because"], ans: 0, exp: "表示結果：所以我們一點四十五相會。" },
+    { q: "Ms. Liu usually gives us a lot of homework, ______ she didn't give us any today. 【108會考】", options: ["(A) but", "(B) if", "(C) or", "(D) so"], ans: 0, exp: "轉折連詞用 but (但是)。" },
+    { q: "My sister wants to buy a car ______ she doesn't have enough money. 【106會考】", options: ["(A) because", "(B) but", "(C) if", "(D) or"], ans: 1, exp: "想買車但沒錢，用轉折連詞 but。" },
+    { q: "Mr. Hu speaks good English ______ he lived in the U.S. for many years. 【100會考】", options: ["(A) because", "(B) but", "(C) so", "(D) whether"], ans: 0, exp: "引導原因子句使用 because。" },
+    { q: "Enya got up early this morning ______ she did not want to be late. 【98會考】", options: ["(A) if", "(B) but", "(C) though", "(D) because"], ans: 3, exp: "早起的原因是因為不想遲到。" },
+    { q: "My uncle gave my brother a guitar. (改為代名詞句型)", options: ["(A) My uncle gave it to him.", "(B) My uncle gave him it.", "(C) My uncle gave it for him.", "(D) My uncle gave guitar him."], ans: 0, exp: "give 搭配介系詞 to，物代名詞用 it。" },
+    { q: "Ken bought his daughter a coat. 換句話說：", options: ["(A) Ken bought a coat to his daughter.", "(B) Ken bought a coat for his daughter.", "(C) Ken bought it to her.", "(D) Ken bought to her a coat."], ans: 1, exp: "buy (購買) 搭配介系詞 for。" },
+    { q: "Sam didn't have lunch today ______ he didn't have any money with him.", options: ["(A) because", "(B) so", "(C) but", "(D) because of"], ans: 0, exp: "後面接完整原因子句，用 because。" },
+    { q: "A: Why ______ Jerry and Lisa play cards with us? B: Because they want to watch a movie.", options: ["(A) don't", "(B) isn't", "(C) aren't", "(D) doesn't"], ans: 0, exp: "主詞 Jerry and Lisa 為複數，助動詞否定用 don't。" }
+];
+
+// --- APP STATE ---
+let currentFlashcardIdx = 0;
+let userStats = {
+    totalAnswered: 0,
+    totalCorrect: 0,
+    currentCombo: 0,
+    maxCombo: 0,
+    m1Correct: 0, m1Total: 0,
+    m2Correct: 0, m2Total: 0,
+    m3Correct: 0, m3Total: 0,
+    mistakes: []
+};
+
+// --- SPEECH SYNTHESIS ---
+function speakText(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.85;
+        window.speechSynthesis.speak(utterance);
+    } else {
+        alert("您的瀏覽器不支援語音朗讀功能。");
+    }
+}
+
+function speakCurrentCard() {
+    const item = vocabList[currentFlashcardIdx];
+    speakText(`${item.word}. ${item.example}`);
+}
+
+function nextFlashcard() {
+    currentFlashcardIdx = (currentFlashcardIdx + 1) % vocabList.length;
+    const item = vocabList[currentFlashcardIdx];
+    document.getElementById('fc-word').innerText = item.word;
+    document.getElementById('fc-meaning').innerText = item.pos;
+    document.getElementById('fc-example').innerHTML = `"${item.example}"`;
+}
+
+// --- NAVIGATION ---
+function switchView(viewName) {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(`view-${viewName}`).classList.add('active');
+    document.getElementById(`nav-${viewName}`).classList.add('active');
+    
+    if (viewName === 'dashboard') {
+        updateDashboard();
+    }
+}
+
+function loadStage(stageNum) {
+    document.querySelectorAll('.stage-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(`stg-${stageNum}`).classList.add('active');
+    
+    document.getElementById('stage-1-content').style.display = 'none';
+    document.getElementById('stage-2-content').style.display = 'none';
+    document.getElementById('stage-3-content').style.display = 'none';
+    document.getElementById('stage-4-content').style.display = 'none';
+    
+    document.getElementById(`stage-${stageNum}-content`).style.display = 'block';
+    
+    if (stageNum === 2) renderStage2Question(0);
+    if (stageNum === 3) renderStage3Question(0);
+    if (stageNum === 4) startQuiz();
+}
+
+// --- STAGE 2 RENDER ---
+let currentStg2Idx = 0;
+function renderStage2Question(idx) {
+    currentStg2Idx = idx;
+    const q = stage2Questions[idx];
+    document.getElementById('stg2-question').innerText = q.q;
+    const optsContainer = document.getElementById('stg2-options');
+    const fb = document.getElementById('stg2-feedback');
+    fb.className = 'feedback';
+    fb.style.display = 'none';
+    optsContainer.innerHTML = '';
+    
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkStage2Answer(i);
+        optsContainer.appendChild(btn);
+    });
+}
+
+function checkStage2Answer(selectedIdx) {
+    const q = stage2Questions[currentStg2Idx];
+    const fb = document.getElementById('stg2-feedback');
+    userStats.totalAnswered++;
+    userStats.m1Total++;
+    
+    if (selectedIdx === q.ans) {
+        userStats.totalCorrect++;
+        userStats.m1Correct++;
+        userStats.currentCombo++;
+        if (userStats.currentCombo > userStats.maxCombo) userStats.maxCombo = userStats.currentCombo;
+        fb.className = 'feedback correct';
+        fb.innerText = `🎉 太棒了！答對了！ ${q.explanation}`;
+        speakText("Great job! That is correct.");
+    } else {
+        userStats.currentCombo = 0;
+        userStats.mistakes.push({ q: q.q, wrong: q.options[selectedIdx], right: q.options[q.ans], exp: q.explanation });
+        fb.className = 'feedback wrong';
+        fb.innerText = `❌ 答錯囉！正確答案是 ${q.options[q.ans]}。解析：${q.explanation}`;
+        speakText("Try again!");
+    }
+    
+    setTimeout(() => {
+        if (currentStg2Idx + 1 < stage2Questions.length) {
+            renderStage2Question(currentStg2Idx + 1);
+        }
+    }, 2500);
+}
+
+// --- STAGE 3 RENDER ---
+let currentStg3Idx = 0;
+function renderStage3Question(idx) {
+    currentStg3Idx = idx;
+    const q = stage3Questions[idx];
+    document.getElementById('stg3-question').innerText = q.q;
+    const optsContainer = document.getElementById('stg3-options');
+    const fb = document.getElementById('stg3-feedback');
+    fb.className = 'feedback';
+    fb.style.display = 'none';
+    optsContainer.innerHTML = '';
+    
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkStage3Answer(i);
+        optsContainer.appendChild(btn);
+    });
+}
+
+function checkStage3Answer(selectedIdx) {
+    const q = stage3Questions[currentStg3Idx];
+    const fb = document.getElementById('stg3-feedback');
+    userStats.totalAnswered++;
+    userStats.m2Total++;
+    userStats.m3Total++;
+    
+    if (selectedIdx === q.ans) {
+        userStats.totalCorrect++;
+        userStats.m2Correct++;
+        userStats.m3Correct++;
+        userStats.currentCombo++;
+        if (userStats.currentCombo > userStats.maxCombo) userStats.maxCombo = userStats.currentCombo;
+        fb.className = 'feedback correct';
+        fb.innerText = `🎉 正確診斷！ ${q.explanation}`;
+        speakText("Awesome! Correct diagnosis.");
+    } else {
+        userStats.currentCombo = 0;
+        userStats.mistakes.push({ q: q.q, wrong: q.options[selectedIdx], right: q.options[q.ans], exp: q.explanation });
+        fb.className = 'feedback wrong';
+        fb.innerText = `❌ 診斷有誤！正確答案是 ${q.options[q.ans]}。解析：${q.explanation}`;
+    }
+    
+    setTimeout(() => {
+        if (currentStg3Idx + 1 < stage3Questions.length) {
+            renderStage3Question(currentStg3Idx + 1);
+        }
+    }, 2500);
+}
+
+// --- STAGE 4 QUIZ ---
+let currentQuizIdx = 0;
+let quizScore = 0;
+function startQuiz() {
+    currentQuizIdx = 0;
+    quizScore = 0;
+    renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+    const q = quizQuestions[currentQuizIdx];
+    document.getElementById('quiz-progress-text').innerText = `題目 ${currentQuizIdx + 1} / ${quizQuestions.length}`;
+    document.getElementById('quiz-score-text').innerText = `得分: ${quizScore}`;
+    document.getElementById('quiz-question').innerText = q.q;
+    
+    const optsContainer = document.getElementById('quiz-options');
+    const fb = document.getElementById('quiz-feedback');
+    fb.className = 'feedback';
+    fb.style.display = 'none';
+    optsContainer.innerHTML = '';
+    
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkQuizAnswer(i);
+        optsContainer.appendChild(btn);
+    });
+}
+
+function checkQuizAnswer(selectedIdx) {
+    const q = quizQuestions[currentQuizIdx];
+    const fb = document.getElementById('quiz-feedback');
+    userStats.totalAnswered++;
+    
+    if (selectedIdx === q.ans) {
+        userStats.totalCorrect++;
+        quizScore += 10;
+        userStats.currentCombo++;
+        if (userStats.currentCombo > userStats.maxCombo) userStats.maxCombo = userStats.currentCombo;
+        fb.className = 'feedback correct';
+        fb.innerText = `🎉 答對了！大花獸綻放了花瓣！ ${q.exp}`;
+        speakText("Correct!");
+    } else {
+        userStats.currentCombo = 0;
+        userStats.mistakes.push({ q: q.q, wrong: q.options[selectedIdx], right: q.options[q.ans], exp: q.exp });
+        fb.className = 'feedback wrong';
+        fb.innerText = `❌ 答錯囉！正確答案是 ${q.options[q.ans]}。解析：${q.exp}`;
+    }
+    
+    setTimeout(() => {
+        currentQuizIdx++;
+        if (currentQuizIdx < quizQuestions.length) {
+            renderQuizQuestion();
+        } else {
+            alert(`🎉 恭喜完成大花獸測驗！最終得分：${quizScore} 分！`);
+            switchView('dashboard');
+        }
+    }, 2000);
+}
+
+// --- DASHBOARD UPDATES ---
+function updateDashboard() {
+    const accuracy = userStats.totalAnswered > 0 
+        ? Math.round((userStats.totalCorrect / userStats.totalAnswered) * 100) 
+        : 0;
+    
+    document.getElementById('db-accuracy').innerText = `${accuracy}%`;
+    document.getElementById('db-completed').innerText = `${userStats.totalAnswered} 題`;
+    document.getElementById('db-combo').innerText = `${userStats.maxCombo} 次`;
+    
+    let badge = "皮克敏新手";
+    if (accuracy >= 80 && userStats.totalAnswered >= 10) badge = "皮克敏英語大師 🌟";
+    else if (accuracy >= 60) badge = "花園探險家 🌿";
+    document.getElementById('db-badge').innerText = badge;
+
+    // Module Progress Bars
+    const m1Pct = userStats.m1Total > 0 ? Math.round((userStats.m1Correct / userStats.m1Total) * 100) : 0;
+    const m2Pct = userStats.m2Total > 0 ? Math.round((userStats.m2Correct / userStats.m2Total) * 100) : 0;
+    const m3Pct = userStats.m3Total > 0 ? Math.round((userStats.m3Correct / userStats.m3Total) * 100) : 0;
+
+    document.getElementById('db-m1-percent').innerText = `${m1Pct}%`;
+    document.getElementById('db-m1-bar').style.width = `${m1Pct}%`;
+
+    document.getElementById('db-m2-percent').innerText = `${m2Pct}%`;
+    document.getElementById('db-m2-bar').style.width = `${m2Pct}%`;
+
+    document.getElementById('db-m3-percent').innerText = `${m3Pct}%`;
+    document.getElementById('db-m3-bar').style.width = `${m3Pct}%`;
+
+    // Mistakes Render
+    const mContainer = document.getElementById('mistake-list');
+    if (userStats.mistakes.length === 0) {
+        mContainer.innerHTML = '✨ 目前完全沒有錯題紀錄，太厲害了！';
+    } else {
+        mContainer.innerHTML = userStats.mistakes.map((m, idx) => `
+            <div style="background:#FFF3E0; border-left:4px solid #FF9800; padding:8px 12px; margin-bottom:8px; border-radius:4px;">
+                <strong>錯題 ${idx+1}:</strong> ${m.q}<br/>
+                <span style="color:#D32F2F;">您的選擇：${m.wrong}</span> | 
+                <span style="color:#388E3C;">正確答案：${m.right}</span><br/>
+                <small style="color:#666;">解析：${m.exp}</small>
+            </div>
+        `).join('');
+    }
+}
+
+function resetLearningData() {
+    if (confirm("確定要重置所有學習紀錄與歷程資料嗎？")) {
+        userStats = {
+            totalAnswered: 0, totalCorrect: 0, currentCombo: 0, maxCombo: 0,
+            m1Correct: 0, m1Total: 0, m2Correct: 0, m2Total: 0, m3Correct: 0, m3Total: 0,
+            mistakes: []
+        };
+        updateDashboard();
+        alert("歷程紀錄已成功重置！");
+    }
+}
+
+// Initial speech call on load
+window.onload = () => {
+    // Initialized
+};
+</script>
+</body>
+</html>
